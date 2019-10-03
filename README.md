@@ -19,17 +19,11 @@ Let you install a Virtual Machine, discover the basics about system and network 
 
 
 ## Legend <a id="legend"></a>
-_*#OH#*_ : run on the host machine
-
-_*#IN#*_ : if needed
-
-```
+```diff
+#IN : run next line only if needed
+#OH : run next line on the host machine
 $ command to run
-```
-```
 > return
-```
-```
 file to edit
 ```
 
@@ -169,11 +163,11 @@ root ALL=(ALL:ALL) ALL
 $ su - <USERNAME>
 ```
 
-***TEST***
-```
+**TEST**
+```diff
 $ sudo -v
-> [sudo] password for <USERNAME>: :heavy_check_mark:
-> Sorry, user <USERNAME> may not run sudo on <HOSTNAME>. :x:
+> [sudo] password for <USERNAME>: ✓
+> Sorry, user <USERNAME> may not run sudo on <HOSTNAME>. ✕
 ```
 
 
@@ -205,9 +199,60 @@ $ sudo service networking restart
 $ sudo reboot
 ```
 
+**TEST**
+```diff
+$ ip a
+> inet <IP>/<NETMASK> brd <IP> scope global enp0s3 ✓
+> inet <IP>/<NETMASK> brd <IP> scope global dynamic enp0s3 ✕
+
+$ ping 8.8.8.8
+> PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+> 64 bytes from 8.8.8.8: imcp_seq=1 ttl=55 time=1.69 ms ✓
+> From <IP> imcp_seq=1 Destination Host Unreachable ✕
+```
+
 
 ## SSH <a id="ssh"></a>
+- configuration ssh
+```diff
+#IN
+$ sudo apt-get install openssh-server
+$ sudo nano /etc/ssh/sshd_config
+```
+```
+port <SSH_PORT>
+```
+```diff
+$ sudo service sshd restart
+#OH
+$ ssh <USERNAME>@<IP> -p <SSH_PORT>
+```
+- configuration public keys
+```diff
+#OH
+$ ssh-keygen -t rsa
+#OH
+$ ssh-copy-id -i id_rsa.pub <USERNAME>@<IP> -p <SSH_PORT>
+```
+- block root login & password authentication
+```
+$ sudo nano /etc/ssh/sshd_config
+```
+```
+PermitRootLogin no
+PasswordAuthentication no
+```
+```
+$ sudo service sshd restart
+```
 
+**TEST**
+```diff
+#OH
+$ ssh <USERNAME>@<IP> -p <SSH_PORT>
+> Enter passphrase for key '~/.ssh/id_rsa': ✓
+> <USERNAME>@<IP>'s password: ✕
+```
 
 ## Firewall <a id="firewall"></a>
 
