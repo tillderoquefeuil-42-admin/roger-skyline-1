@@ -26,11 +26,9 @@ _*#IN#*_ : if needed
 ```
 $ command to run
 ```
-
 ```
 > return
 ```
-
 ```
 file to edit
 ```
@@ -150,7 +148,6 @@ VM > settings > Storage > Controller: IDE Secondary Master: Remove Disk From Vir
 Installation is complete
 > Continue
 ```
-
 ```
 > debian login: <USERNAME>
 > Password: ****
@@ -164,21 +161,19 @@ $ apt-get install sudo
 $ sudo usermod -a -G sudo <USERNAME>
 $ nano /etc/sudoers
 ```
-
 ```
 root ALL=(ALL:ALL) ALL
 <USERNAME> ALL=(ALL:ALL) ALL
 ```
-
 ```
 $ su - <USERNAME>
 ```
 
 ***TEST***
-```diff
+```
 $ sudo -v
-> [sudo] password for <USERNAME>:
-> Sorry, user <USERNAME> may not run sudo on <HOSTNAME>.
+> [sudo] password for <USERNAME>: :heavy_check_mark:
+> Sorry, user <USERNAME> may not run sudo on <HOSTNAME>. :x:
 ```
 
 
@@ -187,7 +182,28 @@ $ sudo -v
 $ sudo apt-get update && sudo apt-get upgrade
 ```
 
+
 ## Static IP <a id="staticip"></a>
+```
+$ sudo nano /etc/network/interfaces
+```
+```
+~~iface enp0s3 inet dhcp~~
+auto enp0s3
+```
+```
+$ sudo nano /etc/network/interfaces.d/enp0s3
+```
+```
+iface enp0s3 inet static
+     address <IP>
+     netmask <NETMASK>
+     gateway <GATEWAY>
+```
+```
+$ sudo service networking restart
+$ sudo reboot
+```
 
 
 ## SSH <a id="ssh"></a>
