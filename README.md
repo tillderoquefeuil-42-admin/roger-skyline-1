@@ -56,13 +56,105 @@ PASS_SSL | tillssl
 
 
 ## Environnement <a id="environnement"></a>
+[VirtualBox](https://www.virtualbox.org/)
+[Debian Img](https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/)
 
 
 ## VB settings <a id="vbsettings"></a>
+New VM > settings > Storage > Controller: IDE empty disk : Choose Virtual Optical Disk File
+
+[x] Live CD/DVD
+
+New VM > settings > Network > Adapter 1 > Attached to: Bridged Adapter
 
 
 ## VM installation <a id="vminstallation"></a>
+```
+> Install
 
+Language
+> English
+
+Location for timezone
+> Other > Europe > France
+
+Local settings
+> United Kingdom
+
+Keyboard
+> British English
+
+Hostname
+> <HOSTNAME>
+
+Domain name
+> *blank*
+
+Root password
+> <ROOT_PSWD>
+
+Fullname for new user
+> <USERNAME>
+
+Username
+> <USERNAME>
+
+New user password
+> <USER_PSWD>
+
+Partitioning method
+> Guided - use entire disk
+
+Select disk to partition
+> SCSI2
+
+Partitioning scheme
+> Separate /home, /var, and /tmp partitions
+
+Overview
+> Finish partitioning and write changes to disk
+
+Write the changes to disks
+> Yes
+
+Scan another CD or DVD?
+> No
+
+Debian archive mirror country
+> France
+
+Debian archive mirror
+> deb.debian.org
+
+HTTP proxy
+> *blank*
+
+Participate in the package usage survey
+> No
+
+Software to install
+> ssh-server
+> standard utilities system
+
+Install the GRUB boot loader
+> Yes
+
+Device for boot loader installation
+> /dev/sda
+```
+
+VM > settings > Storage > Controller: IDE Secondary Master: Remove Disk From Virtual Drive
+[ ] Live CD/DVD
+
+```
+Installation is complete
+> Continue
+```
+
+```
+> debian login: <USERNAME>
+> Password: ****
+```
 
 ## User set up <a id="user"></a>
 
