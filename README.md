@@ -20,6 +20,7 @@ Let you install a Virtual Machine, discover the basics about system and network 
 
 ## Legend <a id="legend"></a>
 _*#OH#*_ : run on the host machine
+
 _*#IN#*_ : if needed
 
 ```
