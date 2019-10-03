@@ -31,8 +31,8 @@ $ command to run
 > return
 ```
 
-```
-file to edit
+```diff
+!file to edit
 ```
 
 
@@ -63,7 +63,7 @@ PASS_SSL | tillssl
 ## VB settings <a id="vbsettings"></a>
 New VM > settings > Storage > Controller: IDE empty disk : Choose Virtual Optical Disk File
 
-[x] Live CD/DVD
+- [x] Live CD/DVD
 
 New VM > settings > Network > Adapter 1 > Attached to: Bridged Adapter
 
@@ -144,7 +144,7 @@ Device for boot loader installation
 ```
 
 VM > settings > Storage > Controller: IDE Secondary Master: Remove Disk From Virtual Drive
-[ ] Live CD/DVD
+- [ ] Live CD/DVD
 
 ```
 Installation is complete
@@ -156,7 +156,30 @@ Installation is complete
 > Password: ****
 ```
 
+
 ## User set up <a id="user"></a>
+```
+$ su
+$ apt-get install sudo
+$ sudo usermod -a -G sudo <USERNAME>
+$ nano /etc/sudoers
+```
+
+```diff
+!root ALL=(ALL:ALL) ALL
+!<USERNAME> ALL=(ALL:ALL) ALL
+```
+
+```
+$ su - <USERNAME>
+```
+
+***TEST***
+```diff
+$ sudo -v
+-> [sudo] password for <USERNAME>:
++> Sorry, user <USERNAME> may not run sudo on <HOSTNAME>.
+```
 
 
 ## Update/grade <a id="upgrade"></a>
