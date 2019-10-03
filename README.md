@@ -181,8 +181,10 @@ $ sudo apt-get update && sudo apt-get upgrade
 ```
 $ sudo nano /etc/network/interfaces
 ```
-```
-~~iface enp0s3 inet dhcp~~
+```diff
+#Remove :
+iface enp0s3 inet dhcp
+#And replace it by :
 auto enp0s3
 ```
 ```
@@ -213,7 +215,7 @@ $ ping 8.8.8.8
 
 
 ## SSH <a id="ssh"></a>
-- configuration ssh
+1. configuration ssh
 ```diff
 #IN
 $ sudo apt-get install openssh-server
@@ -229,13 +231,13 @@ $ sudo service sshd restart
 #OH
 $ ssh <USERNAME>@<IP> -p <SSH_PORT>
 ```
-- configuration public keys
+2. configuration public keys
 ```diff
 #OH
 $ ssh-keygen -t rsa
 $ ssh-copy-id -i id_rsa.pub <USERNAME>@<IP> -p <SSH_PORT>
 ```
-- block root login & password authentication
+3. block root login & password authentication
 ```
 $ sudo nano /etc/ssh/sshd_config
 ```
@@ -256,7 +258,7 @@ $ ssh <USERNAME>@<IP> -p <SSH_PORT>
 ```
 
 ## Firewall <a id="firewall"></a>
-- UFW
+1. UFW
 ```diff
 #IN
 $ sudo apt-get install ufw
@@ -267,7 +269,7 @@ $ sudo ufw allow <SSH_PORT>/tcp
 $ sudo ufw allow <HTTP_DEFAULT_PORT>/tcp
 $ sudo ufw allow <HTTPS_DEFAULT_PORT>
 ```
-- Denial Of Service Attack
+2. Denial Of Service Attack
 ```diff
 #IN
 $ sudo apt-get install fail2ban
@@ -307,7 +309,7 @@ failregex = ^<HOST> -.*"(GET|POST).*
 # Values: TEXT
 ignoreregex =
 ```
-- Restart
+3. Restart
 ```
 $ sudo ufw reload
 $ sudo service fail2ban restart
@@ -320,7 +322,9 @@ $ sudo nano /etc/ssh/sshd_config
 ```diff
 #PasswordAuthentication no
 ```
+```
 $ sudo service sshd restart
+```
 ```diff
 #OH
 $ ssh <USERNAME>@<IP> -p <SSH_PORT>
@@ -348,12 +352,177 @@ $ sudo fail2ban-client status sshd
 
 
 ## Scans protection <a id="scans"></a>
+```diff
+#IN
+$ sudo apt-get install portsentry
+$ sudo nano /etc/portsentry/portsentry.conf
+```
+```
+BLOCK_UDP="1"
+BLOCK_TCP="1"
+...
+#KILL_ROUTE="/sbin/route add -host $TARGET$ reject"
+...
+KILL_ROUTE="/sbin/iptables -I INPUT -s $TARGET$ -j DROP"
+```
+```
+$ sudo nano /etc/default/portsentry
+```
+```
+TCP_MODE="atcp"
+UDP_MODE="audp"
+```
+```
+$ sudo service portsentry restart
+```
+
+**TEST**
+```diff
+#OH
+$ nmap -v -Pn -p 0-2000,60000 <IP>
+> Increasing send delay for <IP> from 0 to 5 due to 11 out of 13 dropped probes since last increase. ✓
+> PORT    STATE  SERVICE ✕
+> 80/tcp  closed http ✕
+> 443/tcp closed https ✕
+```
+
+**RESET**
+```
+$ sudo nano /etc/hosts.deny
+```
+```diff
+#Remove :
+ALL: <IP> : DENY
+```
+```
+$ sudo iptables -t nat -F
+$ sudo iptables -t nat -X
+$ sudo iptables -F
+$ sudo iptables -X
+$ sudo ufw reload
+```
 
 
 ## Stop services <a id="stopservices"></a>
+```
+$ sudo systemctl disable console-setup.service
+$ sudo systemctl disable keyboard-setup.service
+$ sudo systemctl disable apt-daily.timer
+$ sudo systemctl disable apt-daily-upgrade.timer
+$ sudo systemctl disable syslog.service
+```
+
+**TEST**
+```
+$ sudo service --status-all
+```
 
 
 ## Cron update <a id="cronupdate"></a>
+```
+$ sudo nano /usr/bin/update.sh
+```
+
+```diff
+#!/bin/sh
+(date && sudo apt-get update && sudo apt-get upgrade -y && echo "") | sudo tee -a /var/log/update_script.log
+```
+
+```
+$ sudo crontab -e
+```
+
+```diff
+#...
+#UPDATE & UPGRADE PACKAGE
+@reboot /usr/bin/update.sh
+0 4 * * 6 /usr/bin/update.sh
+```
+
+**TEST**
+```diff
+$ sudo crontab -l
+> #UPDATE & UPGRADE PACKAGE
+> @reboot /usr/bin/update.sh
+> 0 4 * * 6 /usr/bin/update.sh
+```
+OR
+```
+$ sudo crontab -e
+```
+```diff
+#UPDATE & UPGRADE PACKAGE
+@reboot /usr/bin/update.sh
+* * * * * /usr/bin/update.sh
+```
+```diff
+$ cat /var/log/update_script.log
+> ACTUAL DATE ✓
+> Hit:1 http://security.debian.org/debian-security buster/updates InRelease ✓
+> [...] ✓
+> 0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded. ✓
+```
 
 
 ## Cron monitoring <a id="cronmonitoring"></a>
+```
+$ sudo nano /usr/bin/cronMonitor.s
+```
+```diff
+#!/bin/bash
+
+TMP="/var/tmp/checkcron"
+FILE="/etc/crontab"
+HASH=$(sudo md5sum $FILE)
+
+if [ ! -f $TMP ]
+then
+    echo "$HASH" | sudo tee $TMP
+    exit 0
+fi
+
+if [ "$HASH" != "$(cat $TMP)" ]
+then
+    echo "$HASH" | sudo tee $TMP > /dev/null
+    echo "$FILE has been modified !" | sudo mail -s "$FILE modified" root
+fi
+```
+```
+$ sudo crontab -e
+```
+```diff
+#...
+#CHECK ETC/CRONTAB
+0 0 * * * /usr/bin/cronMonitor.sh
+```
+
+**TEST**
+```
+$ sudo crontab -e
+```
+
+```diff
+#...
+#CHECK ETC/CRONTAB
+* * * * * /usr/bin/cronMonitor.sh
+```
+```
+$ sudo nano /etc/crontab
+```
+```diff
+# ADD ANYTHING AT THE END OF FILE
+```
+```diff
+$ ls /var/tmp
+> checkcron ✓
+$ cat /var/mail/<USERNAME>
+> From root@debian Tue Oct 01 12:08:01 2019 ✓
+> [...] ✓
+> Subject: /etc/crontab modified ✓
+> To: <root@debian> ✓
+> [...] ✓
+> Date: Tue, 01 Oct 2019 12:08:01 -0400 ✓
+> [...] ✓
+> /etc/crontab has been modified ! ✓
+```
+
