@@ -16,6 +16,9 @@ Let you install a Virtual Machine, discover the basics about system and network 
 * [Stop services](#stopservices)
 * [Cron update](#cronupdate)
 * [Cron monitoring](#cronmonitoring)
+* [LAMP](#lamp)
+* [Web deployment](#deployment)
+* [Self signed ssl certificate](#ssl)
 
 
 ## Legend <a id="legend"></a>
@@ -526,3 +529,128 @@ $ cat /var/mail/<USERNAME>
 > /etc/crontab has been modified ! ✓
 ```
 
+
+## LAMP <a id="lamp"></a>
+1. A for Apache
+```diff
+#IN
+$ sudo apt-get install apache2
+$ sudo ufw allow 'WWW Full'
+#test apache server on http://<IP>
+```
+
+2. M for MariaDb
+```diff
+#IN
+$ sudo apt-get install mariadb-server
+$ sudo mysql_secure_installation
+> Enter current password for root (enter for none): <ROOT_PSWD>
+> Change the root password? [Y/n] n
+> Remove anonymous users? [Y/n] Y
+> Disallow root login remotely? [Y/n] Y
+> Remove test database and access to it? [Y/n] Y
+> Reload privilege tables now? [Y/n] Y
+
+$ sudo mariadb
+> MariaDB [(non)]> GRANT ALL ON *.* TO '<USERNAME>'@'localhost' IDENTIFIED BY '<USER_PSWD>' WITH GRANT OPTION;
+> MariaDB [(non)]> FLUSH PRIVILEGES;
+> MariaDB [(non)]> exit
+#mariadb -u <USERNAME> -p
+```
+
+3. P for PHP
+```diff
+#IN
+$ sudo apt-get install php libapache2-mod-php php-mysql
+$ sudo nano /etc/apache2/mods-enabled/dir.conf
+```
+```
+<IfModule mod_dir.c>
+    DirectoryIndex index.php index.html index.cgi index.pl index.php index.xhtml index.htm
+</IfModule>
+```
+```
+$ sudo service apache2 restart
+```
+
+
+## Web deployment <a id="deployment"></a>
+```diff
+#IN
+$ sudo apt-get install git
+$ cd /var/www
+$ git clone <GIT_REPO> <REPO_NAME>
+$ sudo chown -R $USER:$USER /var/www/<REPO_NAME>
+$ sudo chown -R 755 /var/www/<REPO_NAME>
+
+$ sudo nano /etc/apache2/sites-available/<REPO_NAME>.conf
+```
+```
+<VirtualHost *:80>
+    ServerAdmin <USERNAME>@<REPO_NAME>
+    ServerName <REPO_NAME>
+    ServerAlias www.<REPO_NAME>
+    DocumentRoot /var/www/<REPO_NAME>/
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+```
+```diff
+$ sudo a2ensite <REPO_NAME>.conf
+$ sudo a2dissite 000-default.conf
+$ sudo service apache2 reload
+#test your website on http://<IP>
+```
+
+
+## Self signed ssl certificate <a id="ssl"></a>
+```diff
+#IN
+$ sudo apt-get install openssl
+$ sudo mkdir /var/www/<REPO_NAME>/certs
+$ cd /var/www/<REPO_NAME>/certs
+
+$ sudo openssl genrsa -des3 -passout pass:<PASS_SSL> -out server.pass.key 2048
+$ sudo openssl rsa -passin pass:<PASS_SSL> -in server.pass.key -out server.key
+$ sudo rm server.pass.key
+$ sudo openssl req -new -key server.key -out server.csr
+> Country Name (2 letter code) [AU]:FR
+> State or Province Name (full name) [Some-State]:Ile-de-France
+> Locality Name (eg, city) []:Paris
+> Organization Name (eg, company) [Internet Widgits Pty Ltd]:<REPO_NAME>
+> Organizational Unit Name (eg, section) []:
+> Common Name (e.g. server FQDN or YOUR name) []:<USERNAME>
+> Email Address []:<USER_MAIL>
+> A challenge password []:
+> An optional company name []:
+
+$ sudo openssl x509 -req -sha256 -days 365 -in server.csr -signkey server.key -out server.crt
+
+$ sudo nano /etc/apache2/sites-available/<REPO_NAME>.conf
+```
+```diff
+<VirtualHost *:80>
+#    …
+    Redirect "/" "https://<IP>/"
+#    …
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerAdmin <USERNAME>@<REPO_NAME>
+    ServerName <REPO_NAME>
+    ServerAlias www.<REPO_NAME>
+    DocumentRoot /var/www/<REPO_NAME>/
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+#   SSL
+    SSLEngine On
+    SSLOptions +FakeBasicAuth +ExportCertData +StrictRequire
+    SSLCertificateFile "/var/certs/server.crt"
+    SSLCertificateKeyFile "/var/certs/server.key"
+</VirtualHost>
+```
+```diff
+$ sudo a2enmod ssl
+$ sudo service apache2 restart
+#test your website on https://<IP>
+```
