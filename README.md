@@ -31,8 +31,8 @@ $ command to run
 > return
 ```
 
-```diff
-!file to edit
+```
+file to edit
 ```
 
 
@@ -165,9 +165,9 @@ $ sudo usermod -a -G sudo <USERNAME>
 $ nano /etc/sudoers
 ```
 
-```diff
-!root ALL=(ALL:ALL) ALL
-!<USERNAME> ALL=(ALL:ALL) ALL
+```
+root ALL=(ALL:ALL) ALL
+<USERNAME> ALL=(ALL:ALL) ALL
 ```
 
 ```
@@ -177,13 +177,15 @@ $ su - <USERNAME>
 ***TEST***
 ```diff
 $ sudo -v
--> [sudo] password for <USERNAME>:
-+> Sorry, user <USERNAME> may not run sudo on <HOSTNAME>.
+> [sudo] password for <USERNAME>:
+> Sorry, user <USERNAME> may not run sudo on <HOSTNAME>.
 ```
 
 
 ## Update/grade <a id="upgrade"></a>
-
+```
+$ sudo apt-get update && sudo apt-get upgrade
+```
 
 ## Static IP <a id="staticip"></a>
 
