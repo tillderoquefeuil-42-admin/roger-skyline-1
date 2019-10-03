@@ -21,7 +21,7 @@ Let you install a Virtual Machine, discover the basics about system and network 
 ## Legend <a id="legend"></a>
 ```diff
 #IN : run next line only if needed
-#OH : run next line on the host machine
+#OH : next block on the host machine
 $ command to run
 > return
 file to edit
@@ -222,8 +222,10 @@ $ sudo nano /etc/ssh/sshd_config
 ```
 port <SSH_PORT>
 ```
-```diff
+```
 $ sudo service sshd restart
+```
+```diff
 #OH
 $ ssh <USERNAME>@<IP> -p <SSH_PORT>
 ```
@@ -231,7 +233,6 @@ $ ssh <USERNAME>@<IP> -p <SSH_PORT>
 ```diff
 #OH
 $ ssh-keygen -t rsa
-#OH
 $ ssh-copy-id -i id_rsa.pub <USERNAME>@<IP> -p <SSH_PORT>
 ```
 - block root login & password authentication
@@ -255,6 +256,95 @@ $ ssh <USERNAME>@<IP> -p <SSH_PORT>
 ```
 
 ## Firewall <a id="firewall"></a>
+- UFW
+```diff
+#IN
+$ sudo apt-get install ufw
+$ sudo ufw status
+#IN
+$ sudo ufw enable
+$ sudo ufw allow <SSH_PORT>/tcp
+$ sudo ufw allow <HTTP_DEFAULT_PORT>/tcp
+$ sudo ufw allow <HTTPS_DEFAULT_PORT>
+```
+- Denial Of Service Attack
+```diff
+#IN
+$ sudo apt-get install fail2ban
+$ cd /etc/fail2ban/jail.d
+$ sudo cp defaults-debian.conf defaults-debian.local
+$ sudo nano defaults-debian.local
+```
+```
+[sshd]
+enabled = true
+port = 55555
+bantime = 60
+maxentry = 3
+
+[http-get-dos]
+enabled = true
+port = http,https
+filter = http-get-dos
+logpath = /var/log/apache2/access.log
+maxretry = 300
+findtime = 300
+bantime = 600
+action = iptables[name=HTTP, port=http, protocol=tcp]
+```
+```
+$ cd /etc/fail2ban/filter.d
+$ sudo nano http-get-dos.conf
+```
+```
+# Fail2Ban configuration file
+[Definition]
+
+# Note: This regex will match any GET entry in your logs, so basically all valid and not valid entries are a match.
+failregex = ^<HOST> -.*"(GET|POST).*
+
+# Notes.: regex to ignore. If this regex matches, the line is ignored.
+# Values: TEXT
+ignoreregex =
+```
+- Restart
+```
+$ sudo ufw reload
+$ sudo service fail2ban restart
+```
+
+**TEST**
+```
+$ sudo nano /etc/ssh/sshd_config
+```
+```diff
+#PasswordAuthentication no
+```
+$ sudo service sshd restart
+```diff
+#OH
+$ ssh <USERNAME>@<IP> -p <SSH_PORT>
+#try a false password as many time
+#as the maxentry value in the [sshd] section
+> ssh: connect to host <IP> port <SSH_PORT>: Connection refused ✓
+> <USERNAME>@<IP>'s password: ✕
+```
+
+**RESET**
+```diff
+#wait for end of ban
+#depends on the bantime in the [sshd] section
+#in /etc/fail2ban/jail.d/defaults-debian.local
+$ sudo fail2ban-client status sshd
+> |- Filter
+> |  |- Currently failed:	0
+> |  |- Total failed:	15
+> |  `- File list:	/var/log/auth.log
+> `- Actions
+>    |- Currently banned:	0
+>    |- Total banned:	2
+>    `- Banned IP list:
+```
 
 
 ## Scans protection <a id="scans"></a>
