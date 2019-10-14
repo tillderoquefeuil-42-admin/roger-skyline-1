@@ -104,7 +104,7 @@ Select disk to partition
 > SCSI2
 
 Partitioning scheme
-> Separate /home, /var, and /tmp partitions
+> All files in one partition
 
 Overview
 > Finish partitioning and write changes to disk
