@@ -136,15 +136,14 @@ Install the GRUB boot loader
 
 Device for boot loader installation
 > /dev/sda
+
+Installation is complete
+> Continue
 ```
 
 VM > settings > Storage > Controller: IDE Secondary Master: Remove Disk From Virtual Drive
 - [ ] Live CD/DVD
 
-```
-Installation is complete
-> Continue
-```
 ```
 > debian login: <USERNAME>
 > Password: ****
