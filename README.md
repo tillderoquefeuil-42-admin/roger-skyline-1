@@ -431,14 +431,15 @@ $ sudo nano /usr/bin/update.sh
 ```
 
 ```
+$ chmod 777 /usr/bin/update.sh
 $ sudo crontab -e
 ```
 
 ```diff
 #...
 #UPDATE & UPGRADE PACKAGE
-@reboot /usr/bin/update.sh
-0 4 * * 6 /usr/bin/update.sh
+@reboot sudo /usr/bin/update.sh
+0 4 * * 6 sudo /usr/bin/update.sh
 ```
 
 **TEST**
@@ -468,7 +469,7 @@ $ cat /var/log/update_script.log
 
 ## Cron monitoring <a id="cronmonitoring"></a>
 ```
-$ sudo nano /usr/bin/cronMonitor.s
+$ sudo nano /usr/bin/cronMonitor.sh
 ```
 ```diff
 #!/bin/bash
@@ -490,6 +491,7 @@ then
 fi
 ```
 ```
+$ chmod 777 /usr/bin/cronMonitor.sh
 $ sudo crontab -e
 ```
 ```diff
