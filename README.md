@@ -19,6 +19,7 @@ Let you install a Virtual Machine, discover the basics about system and network 
 * [LAMP](#lamp)
 * [Web deployment](#deployment)
 * [Self signed ssl certificate](#ssl)
+* [Automatic deployment (git hooks)](#hooks)
 
 
 ## Legend <a id="legend"></a>
@@ -654,4 +655,49 @@ $ sudo nano /etc/apache2/sites-available/<REPO_NAME>.conf
 $ sudo a2enmod ssl
 $ sudo service apache2 restart
 #test your website on https://<IP>
+```
+
+
+## Automatic deployment (git hooks) <a id="hooks"></a>
+
+1. Server side
+
+```diff
+$ cd /var/www
+#if there's already a <REPO_NAME> in /var/www, delete it
+$ mkdir <REPO_NAME>
+$ sudo chown -R $USER:$USER /var/www/<REPO_NAME>
+
+$ cd /home/<USERNAME>
+$ mkdir <REPO_NAME>
+$ cd <REPO_NAME>
+$ git init --bare
+
+$ nano hooks/post-receive
+```
+```
+#!/bin/bash
+while read oldrev newrev ref
+do
+    if [[ $ref =~ .*/master$ ]];
+    then
+        echo "Master ref received.  Deploying master branch to production..."
+        git --work-tree=/var/www/<REPO_NAME> --git-dir=/home/<USERNAME>/<REPO_NAME> checkout -f
+    else
+        echo "Ref $ref successfully received.  Doing nothing: only the master branch may be deployed on this server."
+    fi
+done
+```
+```
+$ chmod +x hooks/post-receive
+```
+
+2. Host side
+```diff
+#OH
+$ cd ~/
+$ sudo git clone <GIT_REPO> <REPO_NAME>
+$ cd <REPO_NAME>
+$ git remote add production ssh://<USERNAME>@<IP>:<SSH_PORT>/home/<USERNAME>/<REPO_NAME>
+$ git push production master
 ```
