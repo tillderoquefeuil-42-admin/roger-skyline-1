@@ -580,7 +580,7 @@ $ sudo service apache2 restart
 #IN
 $ sudo apt-get install git
 $ cd /var/www
-$ git clone <GIT_REPO> <REPO_NAME>
+$ sudo git clone <GIT_REPO> <REPO_NAME>
 $ sudo chown -R $USER:$USER /var/www/<REPO_NAME>
 $ sudo chown -R 755 /var/www/<REPO_NAME>
 
@@ -646,8 +646,8 @@ $ sudo nano /etc/apache2/sites-available/<REPO_NAME>.conf
 #   SSL
     SSLEngine On
     SSLOptions +FakeBasicAuth +ExportCertData +StrictRequire
-    SSLCertificateFile "/var/certs/server.crt"
-    SSLCertificateKeyFile "/var/certs/server.key"
+    SSLCertificateFile "/var/www/<REPO_NAME>/certs/server.crt"
+    SSLCertificateKeyFile "/var/www/<REPO_NAME>/certs/server.key"
 </VirtualHost>
 ```
 ```diff
