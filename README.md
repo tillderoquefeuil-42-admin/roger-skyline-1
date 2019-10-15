@@ -7,6 +7,7 @@ Let you install a Virtual Machine, discover the basics about system and network 
 * [Environnement](#environnement)
 * [VB settings](#vbsettings)
 * [VM installation](#vminstallation)
+* [Usefull cmd for correction](#usefull)
 * [User set up](#user)
 * [Update/grade](#upgrade)
 * [Static IP](#staticip)
@@ -151,11 +152,25 @@ VM > settings > Storage > Controller: IDE Secondary Master: Remove Disk From Vir
 ```
 
 
-## User set up <a id="user"></a>
+## Usefull cmd for correction <a id="usefull"></a>
+```diff
+#list all installed packages
+$ sudo apt list --installed
+
+#see partitions files sizes
+$ sudo fdisk - l
 ```
+
+
+## User set up <a id="user"></a>
+```diff
 $ su
 $ apt-get install sudo
+#IN only to create new user
+$ sudo adduser <USERNAME>
 $ sudo usermod -a -G sudo <USERNAME>
+
+#IN only for first user user
 $ nano /etc/sudoers
 ```
 ```
